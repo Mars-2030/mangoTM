@@ -63,10 +63,7 @@ The system is set up to work with the following data files:
    - `body`: Post content
    - `timestamp`: Formatted date/time
 
-2. **fake_data.csv**: Contains 100 simulated posts with:
-   - `id`: Numeric identifier
-   - `username`: User name
-   - `text`: Post content
+
 
 Make sure these files are placed in the project's root directory.
 
@@ -301,10 +298,4 @@ jupyter notebook visualization_notebook.py
 
 This notebook provides widgets to explore topics, user distributions, and suspicious patterns interactively.
 
----
 
-## References and Resources
-
-- LDA Topic Modeling: [Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. Journal of Machine Learning Research, 3, 993-1022.](http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf)
-- Gensim Library: [Řehůřek, R., & Sojka, P. (2010). Software Framework for Topic Modelling with Large Corpora.](https://radimrehurek.com/gensim/)
-- BERTopic: [Grootendorst, M. (2022). BERTopic: Neural topic modeling with a class-based TF-IDF procedure.](https://github.com/MaartenGr/BERTopic)
