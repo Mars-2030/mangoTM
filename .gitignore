@@ -84,7 +84,7 @@ ENV/
 
 # directories to ignore
 preprocessed_data/
-topic_analysis_results/
+# topic_analysis_results/
 data/
 __pycache__/
 .ipynb_checkpoints/
