@@ -1,0 +1,17 @@
+# requirements.txt
+
+streamlit==1.45.0
+pandas==2.2.3
+numpy # Version will be resolved by pandas/scikit-learn etc.
+matplotlib==3.9.2
+seaborn==0.13.2
+plotly==5.24.1
+wordcloud==1.9.4
+scikit-learn==1.5.2
+networkx==3.2.1
+gensim # Let pip resolve the latest compatible version or pin to what you used
+beautifulsoup4==4.13.4
+emoji==2.14.0
+nltk # Let pip resolve or pin
+datasketch==1.6.5
+umap-learn==0.5.7

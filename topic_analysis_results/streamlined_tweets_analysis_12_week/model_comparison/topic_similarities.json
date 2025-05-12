@@ -1,0 +1,109 @@
+[
+  {
+    "lda_topic": 4,
+    "bert_topic": 1,
+    "similarity": 0.30434782608695654,
+    "shared_words": [
+      "der",
+      "die",
+      "f\u00fcr",
+      "ist",
+      "merkel",
+      "sie",
+      "und"
+    ],
+    "num_shared": 7
+  },
+  {
+    "lda_topic": 5,
+    "bert_topic": 0,
+    "similarity": 0.2,
+    "shared_words": [
+      "clinton",
+      "hillary",
+      "like",
+      "people",
+      "trump"
+    ],
+    "num_shared": 5
+  },
+  {
+    "lda_topic": 1,
+    "bert_topic": 2,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "brussels",
+      "islamkills",
+      "prayforbrussels",
+      "stopislam"
+    ],
+    "num_shared": 4
+  },
+  {
+    "lda_topic": 3,
+    "bert_topic": 0,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "dont",
+      "get",
+      "like",
+      "people"
+    ],
+    "num_shared": 4
+  },
+  {
+    "lda_topic": 6,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "dont",
+      "politics",
+      "trump"
+    ],
+    "num_shared": 3
+  },
+  {
+    "lda_topic": 7,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "clinton",
+      "politics",
+      "trump"
+    ],
+    "num_shared": 3
+  },
+  {
+    "lda_topic": 9,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "dont",
+      "get",
+      "people"
+    ],
+    "num_shared": 3
+  },
+  {
+    "lda_topic": 9,
+    "bert_topic": 2,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "gun",
+      "gunsny",
+      "prayerscalifornia"
+    ],
+    "num_shared": 3
+  },
+  {
+    "lda_topic": 11,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "get",
+      "like",
+      "people"
+    ],
+    "num_shared": 3
+  }
+]

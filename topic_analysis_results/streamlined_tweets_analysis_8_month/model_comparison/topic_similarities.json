@@ -1,0 +1,54 @@
+[
+  {
+    "lda_topic": 4,
+    "bert_topic": 1,
+    "similarity": 0.36363636363636365,
+    "shared_words": [
+      "der",
+      "die",
+      "f\u00fcr",
+      "ist",
+      "merkel",
+      "merkelmussbleiben",
+      "sie",
+      "und"
+    ],
+    "num_shared": 8
+  },
+  {
+    "lda_topic": 0,
+    "bert_topic": 0,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "clinton",
+      "hillary",
+      "obama",
+      "people"
+    ],
+    "num_shared": 4
+  },
+  {
+    "lda_topic": 5,
+    "bert_topic": 0,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "clinton",
+      "news",
+      "obama",
+      "politics"
+    ],
+    "num_shared": 4
+  },
+  {
+    "lda_topic": 6,
+    "bert_topic": 0,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "dont",
+      "hillary",
+      "obama",
+      "people"
+    ],
+    "num_shared": 4
+  }
+]

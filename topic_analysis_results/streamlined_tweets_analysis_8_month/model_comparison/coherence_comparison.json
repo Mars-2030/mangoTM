@@ -1,0 +1,6 @@
+{
+  "lda_coherence_mean": 0.36184877897063683,
+  "bert_coherence_mean": 0.467912116062866,
+  "difference": 0.10606333709222915,
+  "percent_improvement_over_lda": 29.311508910974087
+}

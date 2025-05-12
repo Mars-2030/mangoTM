@@ -1,0 +1,40 @@
+[
+  {
+    "lda_topic": 0,
+    "bert_topic": 0,
+    "similarity": 0.30434782608695654,
+    "shared_words": [
+      "china",
+      "dont",
+      "nato",
+      "putin",
+      "russian",
+      "ukraine",
+      "war"
+    ],
+    "num_shared": 7
+  },
+  {
+    "lda_topic": 2,
+    "bert_topic": 0,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "dont",
+      "russian",
+      "ukraine",
+      "war"
+    ],
+    "num_shared": 4
+  },
+  {
+    "lda_topic": 3,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "china",
+      "que",
+      "r\u00fassia"
+    ],
+    "num_shared": 3
+  }
+]

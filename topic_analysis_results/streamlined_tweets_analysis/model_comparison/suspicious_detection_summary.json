@@ -1,0 +1,9 @@
+{
+  "total_suspicious_lda": 438,
+  "total_suspicious_bert": 448,
+  "overlap_count": 434,
+  "overlap_percent_of_lda": 99.08675799086758,
+  "overlap_percent_of_bert": 96.875,
+  "lda_only_count": 4,
+  "bert_only_count": 14
+}

@@ -1,0 +1,87 @@
+[
+  {
+    "lda_topic": 9,
+    "bert_topic": 2,
+    "similarity": 0.42857142857142855,
+    "shared_words": [
+      "auf",
+      "der",
+      "die",
+      "ein",
+      "f\u00fcr",
+      "ist",
+      "mit",
+      "und",
+      "von"
+    ],
+    "num_shared": 9
+  },
+  {
+    "lda_topic": 4,
+    "bert_topic": 0,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "clinton",
+      "hillary",
+      "obama",
+      "trump"
+    ],
+    "num_shared": 4
+  },
+  {
+    "lda_topic": 6,
+    "bert_topic": 3,
+    "similarity": 0.15384615384615385,
+    "shared_words": [
+      "brussels",
+      "islamkills",
+      "prayforbrussels",
+      "stopislam"
+    ],
+    "num_shared": 4
+  },
+  {
+    "lda_topic": 2,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "clinton",
+      "obama",
+      "politics"
+    ],
+    "num_shared": 3
+  },
+  {
+    "lda_topic": 8,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "get",
+      "obama",
+      "people"
+    ],
+    "num_shared": 3
+  },
+  {
+    "lda_topic": 9,
+    "bert_topic": 4,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "\u043a\u043b\u0438\u043d\u0442\u043e\u043d",
+      "\u0442\u0440\u0430\u043c\u043f",
+      "\u0442\u0440\u0430\u043c\u043f\u0430"
+    ],
+    "num_shared": 3
+  },
+  {
+    "lda_topic": 10,
+    "bert_topic": 0,
+    "similarity": 0.1111111111111111,
+    "shared_words": [
+      "dont",
+      "get",
+      "people"
+    ],
+    "num_shared": 3
+  }
+]

@@ -1,0 +1,10 @@
+{
+    "num_topics": 5,
+    "min_topic_size": 15,
+    "time_bin": "day",
+    "combine_by_window": true,
+    "language_model": "all-MiniLM-L6-v2",
+    "n_neighbors": 15,
+    "n_components": 5,
+    "min_cluster_size": 15
+}

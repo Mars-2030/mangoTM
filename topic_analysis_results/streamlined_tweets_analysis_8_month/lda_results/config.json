@@ -1,0 +1,6 @@
+{
+    "num_topics": 5,
+    "time_bin": "month",
+    "combine_by_window": true,
+    "lemmatize": true
+}

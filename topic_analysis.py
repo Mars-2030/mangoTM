@@ -36,7 +36,7 @@ def analyze_with_lda(input_file, output_dir, num_topics=15, time_bin='week', com
         num_topics=num_topics,
         time_bin=time_bin,
         lemmatize=True,
-        extra_stopwords=['reddit', 'post', 'comment', 'www', 'http', 'https', 'com']
+        extra_stopwords=['reddit', 'post', 'comment', 'www', 'http', 'https', 'com', 'amp', 'quot']
     )
     
     # Run the pipeline
@@ -56,7 +56,7 @@ def analyze_with_lda(input_file, output_dir, num_topics=15, time_bin='week', com
     return lda_system, lda_results
 
 
-def analyze_with_bertopic(input_file, output_dir, min_topic_size=10, time_bin='week', combine_by_window=True):
+def analyze_with_bertopic(input_file, output_dir, min_topic_size=10, num_topics=None, time_bin='week', combine_by_window=True):
     """
     Analyze the dataset using BERTopic.
     
@@ -64,11 +64,15 @@ def analyze_with_bertopic(input_file, output_dir, min_topic_size=10, time_bin='w
         input_file: Path to the input CSV file
         output_dir: Directory to save the results
         min_topic_size: Minimum topic size for BERTopic
+        num_topics: Number of topics to generate (if None, determined automatically)
         time_bin: Time binning for temporal analysis ('day', 'week', 'month')
         combine_by_window: Whether to combine posts into time windows
     """
     print(f"\n{'='*50}")
-    print(f"Running BERTopic Analysis with min_topic_size={min_topic_size}")
+    if num_topics is not None:
+        print(f"Running BERTopic Analysis with {num_topics} topics")
+    else:
+        print(f"Running BERTopic Analysis with min_topic_size={min_topic_size}")
     print(f"{'='*50}")
     
     # Initialize the BERTopic system
@@ -79,7 +83,8 @@ def analyze_with_bertopic(input_file, output_dir, min_topic_size=10, time_bin='w
         extra_stopwords=['reddit', 'post', 'comment', 'www', 'http', 'https', 'com'],
         n_neighbors=15,
         n_components=5,
-        min_cluster_size=min_topic_size
+        min_cluster_size=min_topic_size,
+        num_topics=num_topics  # Pass the explicit number of topics
     )
     
     # Run the pipeline
@@ -90,6 +95,14 @@ def analyze_with_bertopic(input_file, output_dir, min_topic_size=10, time_bin='w
         visualize_topics=True,
         detect_suspicious=True
     )
+
+    # --- ADD THIS CHECK ---
+    if bert_results is None:
+        print("\nBERTopic Analysis FAILED!")
+        print(f"Check logs for errors. Results directory: {output_dir}")
+        # Optionally exit or return specific failure values
+        return None, None # Return None for both system and results
+    # --- END CHECK ---
     
     print("\nBERTopic Analysis Complete!")
     print(f"Results saved to: {output_dir}")
@@ -97,7 +110,6 @@ def analyze_with_bertopic(input_file, output_dir, min_topic_size=10, time_bin='w
     print(f"Generated {bert_results['num_topics']} topics")
     
     return bert_system, bert_results
-
 
 def compare_models(lda_dir, bert_dir, output_dir):
     """
@@ -210,6 +222,8 @@ def main():
                         help='Number of topics for LDA model')
     parser.add_argument('--bert-min-size', type=int, default=10,
                         help='Minimum topic size for BERTopic model')
+    parser.add_argument('--bert-topics', type=int, default=None,
+                        help='Explicit number of topics for BERTopic model (overrides min-topic-size)')
     parser.add_argument('--time-bin', choices=['day', 'week', 'month'], default='week',
                         help='Time binning for temporal analysis')
     parser.add_argument('--no-combine', action='store_true',
@@ -252,6 +266,7 @@ def main():
             input_file=args.input,
             output_dir=str(bert_dir),
             min_topic_size=args.bert_min_size,
+            num_topics=args.bert_topics,  # Pass the explicit number of topics
             time_bin=args.time_bin,
             combine_by_window=not args.no_combine
         )
@@ -263,7 +278,6 @@ def main():
     
     print("\nAnalysis complete!")
     print(f"Results saved to: {output_dir}")
-
 
 if __name__ == "__main__":
     main()
