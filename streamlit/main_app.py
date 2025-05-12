@@ -9,7 +9,9 @@ import pandas as pd
 import os
 import traceback
 import nltk 
-
+import shutil
+import tempfile
+from pathlib import Path
 # --- Attempt to import custom modules ---
 MODULES_AVAILABLE = False
 UI_COMPONENTS_LOADED = False
@@ -41,10 +43,10 @@ except ImportError as e_mod:
 @st.cache_resource
 @st.cache_resource
 def ensure_nltk_resources():
-    import shutil
-    import tempfile
-    from pathlib import Path
 
+  
+
+    # Define the NLTK data path
     try:
         app_nltk_data_path = Path(os.getcwd()) / "nltk_data_streamlit"
         app_nltk_data_path.mkdir(parents=True, exist_ok=True)
@@ -53,9 +55,11 @@ def ensure_nltk_resources():
         app_nltk_data_path.mkdir(parents=True, exist_ok=True)
         st.warning(f"Could not create nltk_data_streamlit in app root. Using temp dir: {app_nltk_data_path}. Error: {e_mkdir}")
 
+    # Add the NLTK data path to nltk's search paths
     if str(app_nltk_data_path) not in nltk.data.path:
         nltk.data.path.insert(0, str(app_nltk_data_path))
 
+    # Resources to check
     resources_to_check = {
         "stopwords": ("corpora/stopwords", "stopwords"),
         "punkt": ("tokenizers/punkt", "punkt"),
@@ -77,24 +81,33 @@ def ensure_nltk_resources():
             try:
                 nltk.download(package_id, download_dir=str(app_nltk_data_path), quiet=False)
 
-                # ✅ Patch handling for known 'wordnet' location bug
+                # Special handling for wordnet known issue
                 if name == "wordnet":
                     wordnet_src = app_nltk_data_path / 'wordnet'
-                    wordnet_expected = app_nltk_data_path / 'corpora' / 'wordnet'
+                    wordnet_dst = app_nltk_data_path / 'corpora' / 'wordnet'
                     if wordnet_src.exists():
                         (app_nltk_data_path / 'corpora').mkdir(exist_ok=True)
-                        if wordnet_expected.exists():
-                            shutil.rmtree(wordnet_expected)
-                        shutil.move(str(wordnet_src), str(wordnet_expected))
-                        messages.append(f"INFO: Moved 'wordnet' from '{wordnet_src}' to '{wordnet_expected}' to fix NLTK lookup path.")
+                        if wordnet_dst.exists():
+                            shutil.rmtree(wordnet_dst)
+                        shutil.move(str(wordnet_src), str(wordnet_dst))
+                        messages.append(f"INFO: Moved 'wordnet' from '{wordnet_src}' to '{wordnet_dst}' to fix NLTK lookup path.")
 
                 nltk.data.find(path_suffix)
                 messages.append(f"SUCCESS: NLTK resource '{name}' downloaded and verified in '{app_nltk_data_path}'.")
             except LookupError:
-                messages.append(f"ERROR: NLTK resource '{name}' STILL NOT FOUND after forced move and download attempt. NLTK searched in: {nltk.data.path}")
+                detailed_error = (
+                    f"ERROR: NLTK resource '{name}' STILL NOT FOUND after download attempt. "
+                    f"NLTK searched in: {nltk.data.path}"
+                )
+                messages.append(detailed_error)
                 all_good = False
             except Exception as e_nltk_dl:
-                messages.append(f"ERROR: Failed to execute nltk.download for '{name}'. Exception: {e_nltk_dl}")
+                detailed_error = (
+                    f"ERROR: Failed to execute nltk.download for '{name}' (package_id: '{package_id}').\n"
+                    f"Exception: {e_nltk_dl}\n"
+                    f"Target download directory was: '{app_nltk_data_path}'"
+                )
+                messages.append(detailed_error)
                 all_good = False
 
     st.session_state.nltk_messages_for_sidebar = messages
