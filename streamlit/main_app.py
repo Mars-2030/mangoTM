@@ -37,10 +37,87 @@ except ImportError as e_mod:
     MODULES_AVAILABLE = False
 
 # --- NLTK Resource Check and Download Function ---
-from pathlib import Path # Ensure Path is imported
+
+@st.cache_resource
 
 @st.cache_resource
 def ensure_nltk_resources():
+    import shutil
+    import tempfile
+    from pathlib import Path
+
+    try:
+        app_nltk_data_path = Path(os.getcwd()) / "nltk_data_streamlit"
+        app_nltk_data_path.mkdir(parents=True, exist_ok=True)
+    except Exception as e_mkdir:
+        app_nltk_data_path = Path(tempfile.gettempdir()) / "streamlit_nltk_data"
+        app_nltk_data_path.mkdir(parents=True, exist_ok=True)
+        st.warning(f"Could not create nltk_data_streamlit in app root. Using temp dir: {app_nltk_data_path}. Error: {e_mkdir}")
+
+    if str(app_nltk_data_path) not in nltk.data.path:
+        nltk.data.path.insert(0, str(app_nltk_data_path))
+
+    resources_to_check = {
+        "stopwords": ("corpora/stopwords", "stopwords"),
+        "punkt": ("tokenizers/punkt", "punkt"),
+        "wordnet": ("corpora/wordnet", "wordnet"),
+    }
+
+    all_good = True
+    messages = []
+
+    messages.append(f"INFO: NLTK will search for data in these paths (priority order): {nltk.data.path}")
+    messages.append(f"INFO: NLTK downloads (if needed) will target: {app_nltk_data_path}")
+
+    for name, (path_suffix, package_id) in resources_to_check.items():
+        try:
+            nltk.data.find(path_suffix)
+            messages.append(f"SUCCESS: NLTK resource '{name}' found (using path_suffix: '{path_suffix}').")
+        except LookupError:
+            messages.append(f"INFO: NLTK resource '{name}' not found using suffix '{path_suffix}'. Attempting to download package ID '{package_id}' to '{app_nltk_data_path}'...")
+            try:
+                nltk.download(package_id, download_dir=str(app_nltk_data_path), quiet=False)
+                
+                # Special handling for wordnet known issue
+                if name == "wordnet":
+                    wordnet_src = app_nltk_data_path / 'wordnet'
+                    wordnet_dst = app_nltk_data_path / 'corpora' / 'wordnet'
+                    if wordnet_src.exists():
+                        (app_nltk_data_path / 'corpora').mkdir(exist_ok=True)
+                        if wordnet_dst.exists():
+                            shutil.rmtree(wordnet_dst)
+                        shutil.move(str(wordnet_src), str(wordnet_dst))
+                
+                nltk.data.find(path_suffix)
+                messages.append(f"SUCCESS: NLTK resource '{name}' downloaded and verified in '{app_nltk_data_path}'.")
+            except LookupError:
+                detailed_error = (
+                    f"ERROR: NLTK resource '{name}' (expected at '{path_suffix}') "
+                    f"STILL NOT FOUND after download attempt to '{app_nltk_data_path}'.\n"
+                    f"This usually means the download failed silently, the package structure is unexpected, "
+                    f"or an unzipping issue occurred.\n"
+                    f"NLTK searched in: {nltk.data.path}"
+                )
+                messages.append(detailed_error)
+                all_good = False
+            except Exception as e_nltk_dl:
+                detailed_error = (
+                    f"ERROR: Failed to execute nltk.download for '{name}' (package_id: '{package_id}').\n"
+                    f"Exception: {e_nltk_dl}\n"
+                    f"Target download directory was: '{app_nltk_data_path}'"
+                )
+                messages.append(detailed_error)
+                all_good = False
+
+    st.session_state.nltk_messages_for_sidebar = messages
+    st.session_state.nltk_resources_all_good = all_good
+
+    if all_good:
+        st.session_state.nltk_messages_for_sidebar.append("SUCCESS: All required NLTK resources seem to be correctly set up.")
+    else:
+        st.session_state.nltk_messages_for_sidebar.append("ERROR: One or more NLTK resources could not be set up. Please check the messages above for details.")
+
+    return all_good
     # Define a writable path within the app's directory for NLTK data
     # This path will be relative to where main_app.py is running
     # On Streamlit Cloud, os.getcwd() should be the root of your repo
