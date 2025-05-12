@@ -51,19 +51,19 @@ except ImportError:
     has_datasketch = False
 # -----------------------------
 
-# Download necessary NLTK resources
-# try:
-#     nltk.data.find('tokenizers/punkt')
-#     nltk.data.find('corpora/stopwords')
-#     nltk.data.find('corpora/wordnet')
-# except LookupError:
-#     print("Downloading NLTK data (punkt, stopwords, wordnet)...")
-#     nltk.download('punkt', quiet=True)
-#     nltk.download('stopwords', quiet=True)
-#     nltk.download('wordnet', quiet=True)
-#     print("NLTK data downloaded.")
-os.environ['NLTK_DATA'] = ' /Users/mariamalmutairi/nltk_data' 
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+Download necessary NLTK resources
+try:
+    nltk.data.find('tokenizers/punkt')
+    nltk.data.find('corpora/stopwords')
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    print("Downloading NLTK data (punkt, stopwords, wordnet)...")
+    nltk.download('punkt', quiet=True)
+    nltk.download('stopwords', quiet=True)
+    nltk.download('wordnet', quiet=True)
+    print("NLTK data downloaded.")
+# os.environ['NLTK_DATA'] = ' /Users/mariamalmutairi/nltk_data' 
+# os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class UserTopicModelingSystem:
     """
