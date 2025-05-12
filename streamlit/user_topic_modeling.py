@@ -52,16 +52,35 @@ except ImportError:
 # -----------------------------
 
 # Download necessary NLTK resources
-try:
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('corpora/stopwords')
-    nltk.data.find('corpora/wordnet')
-except LookupError:
-    print("Downloading NLTK data (punkt, stopwords, wordnet)...")
-    nltk.download('punkt', quiet=True)
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
-    print("NLTK data downloaded.")
+import urllib.request
+import zipfile
+
+nltk_data_path = os.path.join(os.getcwd(), "nltk_data_streamlit")
+corpora_path = os.path.join(nltk_data_path, "corpora")
+wordnet_dir = os.path.join(corpora_path, "wordnet")
+
+# Ensure nltk knows the path
+if nltk_data_path not in nltk.data.path:
+    nltk.data.path.insert(0, nltk_data_path)
+
+# Ensure punkt and stopwords are downloaded (they work normally)
+nltk.download('punkt', download_dir=nltk_data_path, quiet=True)
+nltk.download('stopwords', download_dir=nltk_data_path, quiet=True)
+
+# Check and download WordNet manually if needed
+if not os.path.exists(wordnet_dir):
+    print("Downloading WordNet corpus manually...")
+    wordnet_zip_path = os.path.join(corpora_path, "wordnet.zip")
+    os.makedirs(corpora_path, exist_ok=True)
+    url = "https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/wordnet.zip"
+    urllib.request.urlretrieve(url, wordnet_zip_path)
+    with zipfile.ZipFile(wordnet_zip_path, 'r') as zip_ref:
+        zip_ref.extractall(corpora_path)
+    os.remove(wordnet_zip_path)
+    print(f"WordNet corpus manually extracted to {wordnet_dir}")
+else:
+    print(f"WordNet corpus already exists at {wordnet_dir}")
+
 # os.environ['NLTK_DATA'] = ' /Users/mariamalmutairi/nltk_data' 
 # os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
