@@ -15,3 +15,4 @@ emoji==2.14.0
 nltk # Let pip resolve or pin
 datasketch==1.6.5
 umap-learn==0.5.7
+scipy==1.13.1
