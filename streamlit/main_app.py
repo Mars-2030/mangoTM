@@ -46,9 +46,9 @@ def ensure_nltk_resources():
     import shutil
     import tempfile
     from pathlib import Path
+    import zipfile
     import nltk
 
-    # Internal helper to log directory contents for diagnostics
     def log_directory_contents(base_path, log_label):
         content_logs = [f"DEBUG: Listing contents under {log_label} '{base_path}':"]
         if os.path.exists(base_path):
@@ -63,7 +63,6 @@ def ensure_nltk_resources():
             content_logs.append(f"{log_label} path '{base_path}' does not exist.")
         return content_logs
 
-    # Setup paths
     try:
         app_nltk_data_path = Path(os.getcwd()) / "nltk_data_streamlit"
         app_nltk_data_path.mkdir(parents=True, exist_ok=True)
@@ -92,31 +91,32 @@ def ensure_nltk_resources():
             nltk.data.find(path_suffix)
             messages.append(f"SUCCESS: NLTK resource '{name}' found (using path_suffix: '{path_suffix}').")
         except LookupError:
-            messages.append(f"INFO: NLTK resource '{name}' not found using suffix '{path_suffix}'. Attempting to download package ID '{package_id}' to '{app_nltk_data_path}'...")
+            messages.append(f"INFO: NLTK resource '{name}' not found. Attempting to download package ID '{package_id}'...")
             try:
                 nltk.download(package_id, download_dir=str(app_nltk_data_path), quiet=False)
 
-                # Special handling for known 'wordnet' misplacement issue
+                # Explicit unzip if 'wordnet' zip remains
                 if name == "wordnet":
-                    wordnet_src = app_nltk_data_path / 'wordnet'
-                    wordnet_expected = app_nltk_data_path / 'corpora' / 'wordnet'
-                    if wordnet_src.exists():
-                        (app_nltk_data_path / 'corpora').mkdir(exist_ok=True)
-                        if wordnet_expected.exists():
-                            shutil.rmtree(wordnet_expected)
-                        shutil.move(str(wordnet_src), str(wordnet_expected))
-                        messages.append(f"INFO: Moved 'wordnet' from '{wordnet_src}' to '{wordnet_expected}' to fix NLTK lookup path.")
+                    zip_file = app_nltk_data_path / 'corpora' / 'wordnet.zip'
+                    target_dir = app_nltk_data_path / 'corpora' / 'wordnet'
+                    if zip_file.exists():
+                        if target_dir.exists():
+                            shutil.rmtree(target_dir)
+                        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                            zip_ref.extractall(target_dir)
+                        messages.append(f"INFO: Extracted 'wordnet.zip' into '{target_dir}'.")
+                    else:
+                        messages.append(f"WARNING: 'wordnet.zip' not found after download. Manual intervention may be needed.")
 
-                # Confirm again
                 nltk.data.find(path_suffix)
-                messages.append(f"SUCCESS: NLTK resource '{name}' downloaded and verified in '{app_nltk_data_path}'.")
+                messages.append(f"SUCCESS: NLTK resource '{name}' verified in '{app_nltk_data_path}'.")
             except LookupError:
-                messages.append(f"ERROR: NLTK resource '{name}' STILL NOT FOUND after download and forced move. NLTK searched in: {nltk.data.path}")
+                messages.append(f"ERROR: NLTK resource '{name}' STILL NOT FOUND after forced download and unzip.")
                 messages += log_directory_contents(app_nltk_data_path, "NLTK Data Path Root")
                 messages += log_directory_contents(app_nltk_data_path / 'corpora', "Corpora Subfolder")
                 all_good = False
             except Exception as e_nltk_dl:
-                messages.append(f"ERROR: Failed to execute nltk.download for '{name}'. Exception: {e_nltk_dl}")
+                messages.append(f"ERROR: Failed to download or extract '{name}'. Exception: {e_nltk_dl}")
                 all_good = False
 
     st.session_state.nltk_messages_for_sidebar = messages
