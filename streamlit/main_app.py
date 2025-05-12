@@ -41,12 +41,29 @@ except ImportError as e_mod:
 # --- NLTK Resource Check and Download Function ---
 
 @st.cache_resource
-@st.cache_resource
 def ensure_nltk_resources():
+    import os
+    import shutil
+    import tempfile
+    from pathlib import Path
+    import nltk
 
-  
+    # Internal helper to log directory contents for diagnostics
+    def log_directory_contents(base_path, log_label):
+        content_logs = [f"DEBUG: Listing contents under {log_label} '{base_path}':"]
+        if os.path.exists(base_path):
+            for root, dirs, files in os.walk(base_path):
+                level = root.replace(str(base_path), '').count(os.sep)
+                indent = ' ' * 4 * level
+                content_logs.append(f"{indent}{os.path.basename(root)}/")
+                subindent = ' ' * 4 * (level + 1)
+                for f in files:
+                    content_logs.append(f"{subindent}{f}")
+        else:
+            content_logs.append(f"{log_label} path '{base_path}' does not exist.")
+        return content_logs
 
-    # Define the NLTK data path
+    # Setup paths
     try:
         app_nltk_data_path = Path(os.getcwd()) / "nltk_data_streamlit"
         app_nltk_data_path.mkdir(parents=True, exist_ok=True)
@@ -55,11 +72,9 @@ def ensure_nltk_resources():
         app_nltk_data_path.mkdir(parents=True, exist_ok=True)
         st.warning(f"Could not create nltk_data_streamlit in app root. Using temp dir: {app_nltk_data_path}. Error: {e_mkdir}")
 
-    # Add the NLTK data path to nltk's search paths
     if str(app_nltk_data_path) not in nltk.data.path:
         nltk.data.path.insert(0, str(app_nltk_data_path))
 
-    # Resources to check
     resources_to_check = {
         "stopwords": ("corpora/stopwords", "stopwords"),
         "punkt": ("tokenizers/punkt", "punkt"),
@@ -81,33 +96,27 @@ def ensure_nltk_resources():
             try:
                 nltk.download(package_id, download_dir=str(app_nltk_data_path), quiet=False)
 
-                # Special handling for wordnet known issue
+                # Special handling for known 'wordnet' misplacement issue
                 if name == "wordnet":
                     wordnet_src = app_nltk_data_path / 'wordnet'
-                    wordnet_dst = app_nltk_data_path / 'corpora' / 'wordnet'
+                    wordnet_expected = app_nltk_data_path / 'corpora' / 'wordnet'
                     if wordnet_src.exists():
                         (app_nltk_data_path / 'corpora').mkdir(exist_ok=True)
-                        if wordnet_dst.exists():
-                            shutil.rmtree(wordnet_dst)
-                        shutil.move(str(wordnet_src), str(wordnet_dst))
-                        messages.append(f"INFO: Moved 'wordnet' from '{wordnet_src}' to '{wordnet_dst}' to fix NLTK lookup path.")
+                        if wordnet_expected.exists():
+                            shutil.rmtree(wordnet_expected)
+                        shutil.move(str(wordnet_src), str(wordnet_expected))
+                        messages.append(f"INFO: Moved 'wordnet' from '{wordnet_src}' to '{wordnet_expected}' to fix NLTK lookup path.")
 
+                # Confirm again
                 nltk.data.find(path_suffix)
                 messages.append(f"SUCCESS: NLTK resource '{name}' downloaded and verified in '{app_nltk_data_path}'.")
             except LookupError:
-                detailed_error = (
-                    f"ERROR: NLTK resource '{name}' STILL NOT FOUND after download attempt. "
-                    f"NLTK searched in: {nltk.data.path}"
-                )
-                messages.append(detailed_error)
+                messages.append(f"ERROR: NLTK resource '{name}' STILL NOT FOUND after download and forced move. NLTK searched in: {nltk.data.path}")
+                messages += log_directory_contents(app_nltk_data_path, "NLTK Data Path Root")
+                messages += log_directory_contents(app_nltk_data_path / 'corpora', "Corpora Subfolder")
                 all_good = False
             except Exception as e_nltk_dl:
-                detailed_error = (
-                    f"ERROR: Failed to execute nltk.download for '{name}' (package_id: '{package_id}').\n"
-                    f"Exception: {e_nltk_dl}\n"
-                    f"Target download directory was: '{app_nltk_data_path}'"
-                )
-                messages.append(detailed_error)
+                messages.append(f"ERROR: Failed to execute nltk.download for '{name}'. Exception: {e_nltk_dl}")
                 all_good = False
 
     st.session_state.nltk_messages_for_sidebar = messages
@@ -116,7 +125,7 @@ def ensure_nltk_resources():
     if all_good:
         st.session_state.nltk_messages_for_sidebar.append("SUCCESS: All required NLTK resources are correctly set up.")
     else:
-        st.session_state.nltk_messages_for_sidebar.append("ERROR: One or more NLTK resources could not be set up. Please check the messages above for details.")
+        st.session_state.nltk_messages_for_sidebar.append("ERROR: One or more NLTK resources could not be set up. Check the logs for diagnostics.")
 
     return all_good
 
