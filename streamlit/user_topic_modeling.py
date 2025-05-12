@@ -51,7 +51,7 @@ except ImportError:
     has_datasketch = False
 # -----------------------------
 
-Download necessary NLTK resources
+# Download necessary NLTK resources
 try:
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('corpora/stopwords')
