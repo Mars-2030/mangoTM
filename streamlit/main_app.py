@@ -37,11 +37,6 @@ except ImportError as e_mod:
     MODULES_AVAILABLE = False
 
 # --- NLTK Resource Check and Download Function ---
-@st.cache_resource 
-# main_app.py
-# ... other imports ...
-import nltk
-import os # Ensure os is imported
 from pathlib import Path # Ensure Path is imported
 
 @st.cache_resource
