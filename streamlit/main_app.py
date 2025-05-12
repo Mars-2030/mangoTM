@@ -43,8 +43,17 @@ from pathlib import Path # Ensure Path is imported
 def ensure_nltk_resources():
     # Define a writable path within the app's directory for NLTK data
     # This path will be relative to where main_app.py is running
-    app_nltk_data_path = Path(os.getcwd()) / "nltk_data_streamlit"
-    app_nltk_data_path.mkdir(parents=True, exist_ok=True)
+    # On Streamlit Cloud, os.getcwd() should be the root of your repo
+    try:
+        app_nltk_data_path = Path(os.getcwd()) / "nltk_data_streamlit"
+        app_nltk_data_path.mkdir(parents=True, exist_ok=True)
+    except Exception as e_mkdir:
+        # Fallback if creating directory in app root fails (e.g., due to permissions)
+        # Try a standard temporary directory, though this might not persist across all cloud environments
+        app_nltk_data_path = Path(tempfile.gettempdir()) / "streamlit_nltk_data"
+        app_nltk_data_path.mkdir(parents=True, exist_ok=True)
+        st.warning(f"Could not create nltk_data_streamlit in app root. Using temp dir: {app_nltk_data_path}. Error: {e_mkdir}")
+
 
     # Add this custom path to NLTK's search paths if not already present
     # Do this first so NLTK knows where to download AND where to look
@@ -54,40 +63,65 @@ def ensure_nltk_resources():
     resources_to_check = {
         "stopwords": ("corpora/stopwords", "stopwords"),
         "punkt": ("tokenizers/punkt", "punkt"), 
-        "wordnet": ("corpora/wordnet", "wordnet")
+        "wordnet": ("corpora/wordnet", "wordnet") # The one causing issues
     }
     all_good = True
     messages = [] 
+
+    messages.append(f"INFO: NLTK will search for data in these paths (priority order): {nltk.data.path}")
+    messages.append(f"INFO: NLTK downloads (if needed) will target: {app_nltk_data_path}")
+
 
     for name, (path_suffix, package_id) in resources_to_check.items():
         try:
             # NLTK will now also search in app_nltk_data_path
             nltk.data.find(path_suffix) 
-            messages.append(f"SUCCESS: NLTK resource '{name}' found.")
+            messages.append(f"SUCCESS: NLTK resource '{name}' found (using path_suffix: '{path_suffix}').")
         except LookupError:
-            messages.append(f"INFO: NLTK resource '{name}' not found. Downloading '{package_id}' to '{app_nltk_data_path}'...")
+            messages.append(f"INFO: NLTK resource '{name}' not found using suffix '{path_suffix}'. Attempting to download package ID '{package_id}' to '{app_nltk_data_path}'...")
             try:
-                # Explicitly tell NLTK to download to our custom path
-                nltk.download(package_id, download_dir=str(app_nltk_data_path), quiet=False)
+                # Explicitly tell NLTK to download to our custom path, with verbose output
+                # quiet=False will print download progress and errors to standard output (visible in cloud logs)
+                nltk.download(package_id, download_dir=str(app_nltk_data_path), quiet=False) 
+                
+                # After download, NLTK should automatically find it if download_dir is in nltk.data.path
                 # Verify again after download attempt
                 try:
-                    nltk.data.find(path_suffix) # NLTK should find it in the path we added
-                    messages.append(f"SUCCESS: NLTK resource '{name}' downloaded and verified.")
+                    nltk.data.find(path_suffix) 
+                    messages.append(f"SUCCESS: NLTK resource '{name}' downloaded and verified in '{app_nltk_data_path}'.")
                 except LookupError:
-                    messages.append(f"ERROR: NLTK resource '{name}' still not found after download attempt to '{app_nltk_data_path}'. Searched paths: {nltk.data.path}")
+                    detailed_error = (
+                        f"ERROR: NLTK resource '{name}' (expected at '{path_suffix}') "
+                        f"STILL NOT FOUND after download attempt to '{app_nltk_data_path}'.\n"
+                        f"This usually means the download failed silently, the package structure is unexpected, "
+                        f"or an unzipping issue occurred (ensure 'unzip' is in packages.txt for Streamlit Cloud).\n"
+                        f"NLTK searched in: {nltk.data.path}"
+                    )
+                    messages.append(detailed_error)
                     all_good = False
             except Exception as e_nltk_dl:
-                messages.append(f"ERROR: Failed to download NLTK resource '{name}': {e_nltk_dl}")
+                detailed_error = (
+                    f"ERROR: Failed to execute nltk.download for '{name}' (package_id: '{package_id}').\n"
+                    f"Exception: {e_nltk_dl}\n"
+                    f"Target download directory was: '{app_nltk_data_path}'"
+                )
+                messages.append(detailed_error)
                 all_good = False
     
+    # Store messages to be displayed later by the sidebar
     st.session_state.nltk_messages_for_sidebar = messages
     st.session_state.nltk_resources_all_good = all_good
-    if all_good and messages and any("SUCCESS" in msg for msg in messages if "downloaded" in msg): 
-         st.session_state.nltk_messages_for_sidebar.append("SUCCESS: All required NLTK resources checked/downloaded.")
-    elif not all_good:
-        st.session_state.nltk_messages_for_sidebar.append("ERROR: Some NLTK resources could not be set up.")
+    
+    # Add a final summary message based on overall status
+    if all_good:
+        if any("SUCCESS: NLTK resource" in msg and "downloaded and verified" in msg for msg in messages):
+             st.session_state.nltk_messages_for_sidebar.append("SUCCESS: All required NLTK resources seem to be correctly set up.")
+        elif messages: # If messages exist but no new downloads were verified
+             st.session_state.nltk_messages_for_sidebar.append("INFO: NLTK resources were previously available or no new downloads were needed.")
+    else:
+        st.session_state.nltk_messages_for_sidebar.append("ERROR: One or more NLTK resources could not be set up. Please check the messages above for details.")
+    
     return all_good
-
 
 NLTK_READY = ensure_nltk_resources()
 
