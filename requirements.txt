@@ -11,7 +11,8 @@ networkx==3.2.1
 gensim # Let pip resolve the latest compatible version or pin to what you used
 beautifulsoup4==4.13.4
 emoji==2.14.0
-nltk # Let pip resolve or pin
+nltk==3.8.1
+ # Let pip resolve or pin
 datasketch==1.6.5
 umap-learn==0.5.7
 scipy==1.10.1 
