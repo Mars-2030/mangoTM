@@ -38,22 +38,61 @@ except ImportError as e_mod:
 
 # --- NLTK Resource Check and Download Function ---
 @st.cache_resource 
+# main_app.py
+# ... other imports ...
+import nltk
+import os # Ensure os is imported
+from pathlib import Path # Ensure Path is imported
+
+@st.cache_resource
 def ensure_nltk_resources():
+    # Define a writable path within the app's directory for NLTK data
+    # This path will be relative to where main_app.py is running
+    app_nltk_data_path = Path(os.getcwd()) / "nltk_data_streamlit"
+    app_nltk_data_path.mkdir(parents=True, exist_ok=True)
+
+    # Add this custom path to NLTK's search paths if not already present
+    # Do this first so NLTK knows where to download AND where to look
+    if str(app_nltk_data_path) not in nltk.data.path:
+        nltk.data.path.insert(0, str(app_nltk_data_path)) # Prepend to give it priority
+
     resources_to_check = {
         "stopwords": ("corpora/stopwords", "stopwords"),
-        "punkt": ("tokenizers/punkt", "punkt"),
+        "punkt": ("tokenizers/punkt", "punkt"), 
         "wordnet": ("corpora/wordnet", "wordnet")
     }
-    all_good = True; messages = []
-    for name,(path,package_id) in resources_to_check.items():
-        try: nltk.data.find(path)
+    all_good = True
+    messages = [] 
+
+    for name, (path_suffix, package_id) in resources_to_check.items():
+        try:
+            # NLTK will now also search in app_nltk_data_path
+            nltk.data.find(path_suffix) 
+            messages.append(f"SUCCESS: NLTK resource '{name}' found.")
         except LookupError:
-            messages.append(f"INFO: Downloading NLTK resource: {name} ({package_id})...");
-            try: nltk.download(package_id,quiet=True); messages.append(f"SUCCESS: NLTK resource '{name}' downloaded.")
-            except Exception as e_nltk_dl: messages.append(f"ERROR: Failed to download NLTK resource '{name}': {e_nltk_dl}"); all_good=False
-    st.session_state.nltk_messages_for_sidebar=messages; st.session_state.nltk_resources_all_good=all_good
-    if all_good and messages: st.session_state.nltk_messages_for_sidebar.append("SUCCESS: All required NLTK resources checked/downloaded.")
+            messages.append(f"INFO: NLTK resource '{name}' not found. Downloading '{package_id}' to '{app_nltk_data_path}'...")
+            try:
+                # Explicitly tell NLTK to download to our custom path
+                nltk.download(package_id, download_dir=str(app_nltk_data_path), quiet=False)
+                # Verify again after download attempt
+                try:
+                    nltk.data.find(path_suffix) # NLTK should find it in the path we added
+                    messages.append(f"SUCCESS: NLTK resource '{name}' downloaded and verified.")
+                except LookupError:
+                    messages.append(f"ERROR: NLTK resource '{name}' still not found after download attempt to '{app_nltk_data_path}'. Searched paths: {nltk.data.path}")
+                    all_good = False
+            except Exception as e_nltk_dl:
+                messages.append(f"ERROR: Failed to download NLTK resource '{name}': {e_nltk_dl}")
+                all_good = False
+    
+    st.session_state.nltk_messages_for_sidebar = messages
+    st.session_state.nltk_resources_all_good = all_good
+    if all_good and messages and any("SUCCESS" in msg for msg in messages if "downloaded" in msg): 
+         st.session_state.nltk_messages_for_sidebar.append("SUCCESS: All required NLTK resources checked/downloaded.")
+    elif not all_good:
+        st.session_state.nltk_messages_for_sidebar.append("ERROR: Some NLTK resources could not be set up.")
     return all_good
+
 
 NLTK_READY = ensure_nltk_resources()
 
