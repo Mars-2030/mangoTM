@@ -1,0 +1,14 @@
+streamlit==1.45.0
+pandas==2.2.3
+numpy
+scikit-learn==1.5.2
+plotly
+nltk
+wordcloud
+matplotlib==3.9.2
+
+gensim
+emoji
+scipy==1.10.1 
+janome #japanese
+jieba #chinese
