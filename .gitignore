@@ -1,2 +1,4 @@
 nltk_data_streamlit
 __pycache__
+.DS_Store
+data/.DS_Store
