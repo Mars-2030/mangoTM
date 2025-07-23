@@ -6,7 +6,7 @@ plotly
 nltk
 wordcloud
 matplotlib==3.9.2
-
+seaborn
 gensim
 emoji
 scipy==1.10.1 
